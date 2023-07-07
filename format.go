@@ -124,17 +124,17 @@ func bwrite(w io.Writer, data ...interface{}) error {
 }
 
 var readbuf = make([]byte, 1024)
+var tagtype tagType
 
 func bread(r io.Reader, data ...interface{}) error {
 	for _, v := range data {
 		t, ok := v.(tagType)
 		if ok {
-			var tt tagType
-			if err := binary.Read(r, binary.BigEndian, &tt); err != nil {
+			if err := binary.Read(r, binary.BigEndian, &tagtype); err != nil {
 				return err
 			}
-			if tt != t {
-				return fmt.Errorf("Protcol error: Got type %s but expected %s", tt, t)
+			if tagtype != t {
+				return fmt.Errorf("Protcol error: Got type %s but expected %s", tagtype, t)
 			}
 			continue
 		}
