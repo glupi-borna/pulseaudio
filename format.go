@@ -122,6 +122,8 @@ func bwrite(w io.Writer, data ...interface{}) error {
 	return nil
 }
 
+var readbuf = make([]byte, 1024)
+
 func bread(r io.Reader, data ...interface{}) error {
 	for _, v := range data {
 		t, ok := v.(tagType)
@@ -138,19 +140,18 @@ func bread(r io.Reader, data ...interface{}) error {
 
 		sptr, ok := v.(*string)
 		if ok {
-			buf := make([]byte, 1024) // max string length i guess.
 			i := 0
 			for {
-				_, err := r.Read(buf[i : i+1])
+				_, err := r.Read(readbuf[i : i+1])
 				if err != nil {
 					return err
 				}
-				if buf[i] == 0 {
-					*sptr = string(buf[:i])
+				if readbuf[i] == 0 {
+					*sptr = string(readbuf[:i])
 					break
 				} else {
-					if i > len(buf) {
-						return fmt.Errorf("String is too long (max %d bytes)", len(buf))
+					if i > len(readbuf) {
+						return fmt.Errorf("String is too long (max %d bytes)", len(readbuf))
 					}
 					i++
 				}
