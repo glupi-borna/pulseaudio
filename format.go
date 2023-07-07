@@ -1,6 +1,7 @@
 package pulseaudio
 
 import (
+	"unsafe"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -147,7 +148,7 @@ func bread(r io.Reader, data ...interface{}) error {
 					return err
 				}
 				if readbuf[i] == 0 {
-					*sptr = string(readbuf[:i])
+					*sptr = bytesToString(readbuf[:i])
 					break
 				} else {
 					if i > len(readbuf) {
@@ -228,3 +229,8 @@ func bread(r io.Reader, data ...interface{}) error {
 	}
 	return nil
 }
+
+func bytesToString(bs []byte) string {
+	return *(*string)(unsafe.Pointer(&bs))
+}
+
