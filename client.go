@@ -262,16 +262,28 @@ func (c *Client) addPacket(data packet) (err error) {
 	return nil
 }
 
+func get_cookie() ([]byte, string, error) {
+	home := os.Getenv("HOME")
+	cookiePath := home + "/.config/pulse/cookie"
+	cookie, err := os.ReadFile(cookiePath)
+	if err != nil { return cookie, cookiePath, nil }
+
+	cookiePath = home + "/.pulse-cookie"
+	cookie, err = os.ReadFile(cookiePath)
+	if err != nil { return nil, cookiePath, err }
+
+	return cookie, cookiePath, nil
+}
+
 func (c *Client) auth() error {
 	const protocolVersionMask = 0x0000FFFF
-	cookiePath := os.Getenv("HOME") + "/.config/pulse/cookie"
-	cookie, err := ioutil.ReadFile(cookiePath)
-	if err != nil {
-		return err
-	}
+	cookie, cookiePath, err := get_cookie()
+	if err != nil { return err }
+
 	const cookieLength = 256
 	if len(cookie) != cookieLength {
-		return fmt.Errorf("pulse audio client cookie has incorrect length %d: Expected %d (path %#v)",
+		return fmt.Errorf(
+			"pulse audio client cookie has incorrect length %d: Expected %d (path %#v)",
 			len(cookie), cookieLength, cookiePath)
 	}
 	b, err := c.request(commandAuth,
