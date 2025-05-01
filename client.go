@@ -261,15 +261,27 @@ func (c *Client) addPacket(data packet) (err error) {
 	return nil
 }
 
+func file_exists(path string) bool {
+	_, err := os.Stat(path)
+	return err==nil
+}
+
 func get_cookie() ([]byte, string, error) {
 	home := os.Getenv("HOME")
 	cookiePath := home + "/.config/pulse/cookie"
-	cookie, err := os.ReadFile(cookiePath)
-	if err != nil { return cookie, cookiePath, nil }
+
+	var cookie []byte
+	var err error
+	if file_exists(cookiePath) {
+		cookie, err = os.ReadFile(cookiePath)
+		if err != nil { return cookie, cookiePath, nil }
+	}
 
 	cookiePath = home + "/.pulse-cookie"
-	cookie, err = os.ReadFile(cookiePath)
-	if err != nil { return nil, cookiePath, err }
+	if file_exists(cookiePath) {
+		cookie, err = os.ReadFile(cookiePath)
+		if err != nil { return nil, cookiePath, err }
+	}
 
 	return cookie, cookiePath, nil
 }
